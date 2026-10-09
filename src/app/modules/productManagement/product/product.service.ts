@@ -8,6 +8,7 @@ import { InventoryModel } from "../inventory/inventory.model";
 import PriceModel from "../price/price.model";
 import { create } from "xmlbuilder2";
 import config from "../../../config/config";
+import { mergeMediaBaseUrl } from "../../../utilities/mediaPath";
 import {
   AggregateQueryHelperFacet,
   ExtendedPipelineStage,
@@ -1324,10 +1325,7 @@ const generateFacebookCatalogXML = async () => {
 
     // IMAGE
     const thumbnail = product?.image?.thumbnail as any;
-    let imageUrl = thumbnail?.src ? thumbnail.src : "";
-    if (imageUrl && !imageUrl.startsWith("http")) {
-      imageUrl = `https://api.${config.main_domain}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
-    }
+    const imageUrl = thumbnail?.src ? mergeMediaBaseUrl(thumbnail.src) : "";
 
     // Description fallback
     const firstCategoryName =

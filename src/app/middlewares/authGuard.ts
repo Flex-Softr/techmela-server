@@ -87,9 +87,9 @@ const authGuard =
           );
           const cookieOption: CookieOptions = {
             domain:
-              config.env === "production"
+              config.env === "production" && config.main_domain
                 ? `.${config.main_domain}`
-                : "localhost",
+                : undefined,
             httpOnly: config.env === "production",
             secure: config.env === "production",
             sameSite: "lax",

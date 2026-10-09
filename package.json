@@ -11,6 +11,7 @@
     "build": "npx tsc",
     "start": "node dist/server.js",
     "seed": "ts-node --transpile-only src/scripts/seedSuperAdmin.ts",
+    "migrate:media": "ts-node --transpile-only src/scripts/migrateImagePaths.ts",
     "prepare": "husky install"
   },
   "lint-staged": {
@@ -33,6 +34,7 @@
     "@types/nodemailer": "^6.4.23",
     "@types/otp-generator": "^4.0.2",
     "@types/request-ip": "^0.0.41",
+    "@types/sharp": "^0.31.1",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "eslint": "^8.56.0",
@@ -72,6 +74,7 @@
     "nodemailer": "^6.10.1",
     "otp-generator": "^4.0.1",
     "request-ip": "^3.3.0",
+    "sharp": "^0.35.5",
     "tough-cookie": "^5.1.0",
     "twilio": "^4.21.0",
     "winston": "^3.11.0",
@@ -80,6 +83,6 @@
     "zod": "^3.22.4"
   },
   "engines": {
-    "node": ">=20.19.0 <23.0.0"
+    "node": ">=20.19.0"
   }
 }

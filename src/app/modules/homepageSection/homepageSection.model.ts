@@ -3,8 +3,9 @@ import { THomePageSection } from "./homepageSection.interface";
 
 const homepageSectionSchema = new Schema<THomePageSection>(
   {
-    title: { type: String, required: true },
+    title: { type: String },
     subtitle: { type: String },
+    image: { type: Schema.Types.ObjectId, ref: "Image" },
     collectionId: {
       type: String,
       required: true,

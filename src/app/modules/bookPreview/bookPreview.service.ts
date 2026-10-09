@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { Types } from "mongoose";
 import config from "../../config/config";
 import { QueryHelper } from "../../helper/query.helper";
@@ -6,8 +8,16 @@ import { r2Client } from "../../config/r2.config";
 import { TBookPreview } from "./bookPreview.interface";
 import { BookPreviewModel } from "./bookPreview.model";
 
+import { extractMediaKey } from "../../utilities/mediaPath";
+
 const createBookPreviewIntoDB = async (payload: Partial<TBookPreview[]>) => {
-  const result = await BookPreviewModel.create(payload);
+  const normalizedPayload = Array.isArray(payload)
+    ? payload.map((preview) => ({
+        ...preview,
+        src: extractMediaKey(preview?.src),
+      }))
+    : payload;
+  const result = await BookPreviewModel.create(normalizedPayload);
   return result;
 };
 
@@ -43,24 +53,41 @@ const deleteBookPreviewsFromDB = async (
   previewIds: string[]
 ) => {
   if (previewIds.length) {
-    previewIds.forEach(async (id) => {
+    for (const id of previewIds) {
       const result = await BookPreviewModel.findByIdAndUpdate(id, {
         deletedBy,
         isDeleted: true,
       });
       if (result) {
-        try {
-          const command = new DeleteObjectCommand({
-            Bucket: config.r2.bucketName,
-            Key: result.src,
-          });
-          await r2Client.send(command);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error("Failed to delete object from R2:", error);
+        const key = extractMediaKey(result.src);
+        if (config.upload_platform === "r2") {
+          try {
+            const command = new DeleteObjectCommand({
+              Bucket: config.r2.bucketName,
+              Key: key,
+            });
+            await r2Client.send(command);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error("Failed to delete object from R2:", error);
+          }
+        } else {
+          try {
+            const localFilePath = path.join(
+              process.cwd(),
+              "uploads/previews",
+              key
+            );
+            if (fs.existsSync(localFilePath)) {
+              await fs.promises.unlink(localFilePath);
+            }
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error("Failed to delete local preview file:", error);
+          }
         }
       }
-    });
+    }
   }
 };
 

@@ -1,9 +1,11 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 import { TCollection } from "../productManagement/collection/collection.interface";
+import { TImage } from "../image/image.interface";
 
 export type THomePageInput = {
-  title: string;
+  title?: string;
   subtitle?: string;
+  image?: Types.ObjectId | string | TImage | null;
   collectionId: string | TCollection;
   sortOrder?: number;
   limit?: number;
@@ -13,3 +15,4 @@ export type THomePageInput = {
 };
 
 export type THomePageSection = Document & THomePageInput;
+

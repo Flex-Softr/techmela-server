@@ -3,6 +3,7 @@ import authGuard from "../../middlewares/authGuard";
 
 import { ROLES } from "../userManagement/user/user.const";
 import { BookPreviewControllers } from "./bookPreview.controller";
+import { uploadMemory } from "../../config/multer.config";
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.post(
 router.post(
   "/",
   authGuard({ requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF] }),
+  uploadMemory.any(),
   BookPreviewControllers.createBookPreview
 );
 

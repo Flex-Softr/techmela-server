@@ -29,7 +29,9 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
   const cookieOption: CookieOptions = {
     domain:
-      config.env === "production" ? `.${config.main_domain}` : "localhost",
+      config.env === "production" && config.main_domain
+        ? `.${config.main_domain}`
+        : undefined,
     httpOnly: config.env === "production",
     secure: config.env === "production",
     sameSite: "lax",
@@ -57,7 +59,9 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
   // const accessToken=refreshToken
   const cookieOption: CookieOptions = {
     domain:
-      config.env === "production" ? `.${config.main_domain}` : "localhost",
+      config.env === "production" && config.main_domain
+        ? `.${config.main_domain}`
+        : undefined,
     httpOnly: config.env === "production",
     secure: config.env === "production",
     sameSite: "lax",
@@ -88,7 +92,9 @@ const logoutUser = catchAsync(async (req: Request, res: Response) => {
   req.ecSID.newId();
   const cookieOption: CookieOptions = {
     domain:
-      config.env === "production" ? `.${config.main_domain}` : "localhost",
+      config.env === "production" && config.main_domain
+        ? `.${config.main_domain}`
+        : undefined,
     httpOnly: config.env === "production",
     secure: config.env === "production",
     sameSite: "lax",
@@ -136,7 +142,9 @@ const deleteAccount = catchAsync(async (req: Request, res: Response) => {
   // Clear auth cookies
   const cookieOption = {
     domain:
-      config.env === "production" ? `.${config.main_domain}` : "localhost",
+      config.env === "production" && config.main_domain
+        ? `.${config.main_domain}`
+        : undefined,
     httpOnly: config.env === "production",
     secure: config.env === "production",
     sameSite: "lax" as const,

@@ -16,7 +16,9 @@ export const ecSIDHandler = (
   let ecSID = req?.cookies["_app.ec.sid"];
   const cookieOption: CookieOptions = {
     domain:
-      config.env === "production" ? `.${config.main_domain}` : "localhost",
+      config.env === "production" && config.main_domain
+        ? `.${config.main_domain}`
+        : undefined,
     httpOnly: config.env === "production",
     secure: config.env === "production",
     sameSite: "lax",

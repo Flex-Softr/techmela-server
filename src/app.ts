@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors, { CorsOptions } from "cors";
 import express, { Application } from "express";
 import userAgent from "express-useragent";
+import fs from "fs";
 import helmet from "helmet";
 import path from "path";
 import requestIp from "request-ip";
@@ -84,9 +85,20 @@ app.get(`/${PATH_PREFIX}`, (req, res) => {
 });
 
 // static files
-const uploadsPath = path.join(__dirname, "..", "uploads/public");
+const uploadsPath = path.join(
+  process.cwd(),
+  config.local_upload_folder || "uploads/public"
+);
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+}
 app.use(
   `/${PATH_PREFIX}/uploads/public`,
+  enableCrossOriginResourcePolicy,
+  express.static(uploadsPath)
+);
+app.use(
+  `/uploads/public`,
   enableCrossOriginResourcePolicy,
   express.static(uploadsPath)
 );

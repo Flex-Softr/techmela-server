@@ -85,12 +85,21 @@ const createSuperAdmin = async () => {
     const userId = await createAdminOrStaffId(false);
     if (!userId) throw new Error("❌ Failed to create super admin user ID!");
 
+    const seedEmail = config.superAdmin?.email;
+    const seedPassword = config.superAdmin?.password;
+
+    if (!seedEmail || !seedPassword) {
+      throw new Error(
+        "❌ SEED_EMAIL and SEED_PASSWORD are required in environment variables for seeding super admin!"
+      );
+    }
+
     const [[admin], [address]] = await Promise.all([
       Admin.create(
         [
           {
             uid: userId,
-            fullName: config.superAdmin?.fullName,
+            fullName: "Super Admin",
           },
         ],
         { session }
@@ -99,7 +108,7 @@ const createSuperAdmin = async () => {
         [
           {
             uid: userId,
-            fullAddress: config.superAdmin?.fullAddress,
+            fullAddress: "N/A",
           },
         ],
         { session }
@@ -110,9 +119,9 @@ const createSuperAdmin = async () => {
       [
         {
           uid: userId,
-          phoneNumber: config.superAdmin?.phoneNumber as string,
-          email: config.superAdmin?.email as string,
-          password: config.superAdmin?.password as string,
+          phoneNumber: "00000000000",
+          email: seedEmail,
+          password: seedPassword,
           role: ROLES.SUPER_ADMIN,
           admin: admin._id,
           address: address._id,
