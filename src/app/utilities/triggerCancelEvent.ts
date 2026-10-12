@@ -1,10 +1,16 @@
-import config from "../config/config";
-import { logger } from "./logger";
+// ============================================================================
+// Server-side cancel event tracking - Temporarily disabled / Commented out
+// To re-enable: uncomment the imports and function body below
+// ============================================================================
+// import config from "../config/config";
+// import { logger } from "./logger";
 
-const triggerCancelEvent = (orderId: string) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+const triggerCancelEvent = (_orderId: string) => {
+  /*
   const body = {
     event_name: "purchase_cancel",
-    order_id: orderId,
+    order_id: _orderId,
     event_secret: config.event_secret,
   };
 
@@ -26,6 +32,7 @@ const triggerCancelEvent = (orderId: string) => {
     body: JSON.stringify(body),
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   }).catch((_error) => {});
+  */
 };
 
 export default triggerCancelEvent;
