@@ -419,6 +419,11 @@ const getAllProductsAdminFromDB = async (query: Record<string, unknown>) => {
                 src: "$thumbnail.src",
                 alt: "$thumbnail.alt",
               },
+              image: {
+                _id: "$thumbnail._id",
+                src: "$thumbnail.src",
+                alt: "$thumbnail.alt",
+              },
               category: 1,
               // productCollection: "$productCollection",
               publishedStatus: 1,

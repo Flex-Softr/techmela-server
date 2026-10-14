@@ -138,7 +138,10 @@ const createImage = catchAsync(async (req, res) => {
         await r2Client.send(command);
       } else {
         const localFolder = config.local_upload_folder || "uploads/public";
-        const localDir = path.join(process.cwd(), localFolder, folder);
+        const localBaseDir = path.isAbsolute(localFolder)
+          ? localFolder
+          : path.join(__dirname, "../../..", localFolder);
+        const localDir = path.join(localBaseDir, folder);
         await fs.promises.mkdir(localDir, { recursive: true });
         const localFilePath = path.join(localDir, fileName);
         await fs.promises.writeFile(localFilePath, webpBuffer);

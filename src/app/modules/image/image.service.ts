@@ -73,7 +73,10 @@ const deleteImagesFromDB = async (
         } else {
           try {
             const localFolder = config.local_upload_folder || "uploads/public";
-            const localFilePath = path.join(process.cwd(), localFolder, key);
+            const localBaseDir = path.isAbsolute(localFolder)
+              ? localFolder
+              : path.join(__dirname, "../../..", localFolder);
+            const localFilePath = path.join(localBaseDir, key);
             if (fs.existsSync(localFilePath)) {
               await fs.promises.unlink(localFilePath);
             }

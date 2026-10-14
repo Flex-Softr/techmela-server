@@ -180,6 +180,11 @@ export const commonProductProjection = {
     src: "$thumbnail.src",
     alt: "$thumbnail.alt",
   },
+  image: {
+    _id: "$thumbnail._id",
+    src: "$thumbnail.src",
+    alt: "$thumbnail.alt",
+  },
   // Calculated active price for sorting (salePrice if exists, else regularPrice)
   price: {
     $cond: {
@@ -343,7 +348,7 @@ export const commonPipelineSingleProduct = (
     $unwind: { path: "$seo", preserveNullAndEmptyArrays: true },
   },
   {
-    $unwind: "$thumbnail",
+    $unwind: { path: "$thumbnail", preserveNullAndEmptyArrays: true },
   },
   {
     $unwind: { path: "$price", preserveNullAndEmptyArrays: true },
@@ -371,6 +376,7 @@ export const commonPipelineSingleProduct = (
       // additionalInfo: 1,
       // usageGuidelines: 1,
       thumbnail: "$thumbnail",
+      image: "$thumbnail",
       gallery: "$gallery",
       price: "$price",
       inventory: "$inventory",
@@ -457,7 +463,7 @@ export const commonPipelineMultipleProduct: PipelineStage[] = [
     },
   },
   {
-    $unwind: "$thumbnail",
+    $unwind: { path: "$thumbnail", preserveNullAndEmptyArrays: true },
   },
   {
     $lookup: {

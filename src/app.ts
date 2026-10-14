@@ -41,12 +41,16 @@ if (config.env === "production") {
 app.use(cors(corsOptions));
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        "frame-ancestors": ["'self'", ...allowedOrigins],
-      },
-    },
+    contentSecurityPolicy:
+      config.env === "production"
+        ? {
+            directives: {
+              ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+              "frame-ancestors": ["'self'", ...allowedOrigins],
+            },
+          }
+        : false,
+    hsts: config.env === "production",
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
@@ -85,10 +89,9 @@ app.get(`/${PATH_PREFIX}`, (req, res) => {
 });
 
 // static files
-const uploadsPath = path.join(
-  process.cwd(),
-  config.local_upload_folder || "uploads/public"
-);
+const uploadsPath = path.isAbsolute(config.local_upload_folder || "")
+  ? config.local_upload_folder
+  : path.join(__dirname, "..", config.local_upload_folder || "uploads/public");
 if (!fs.existsSync(uploadsPath)) {
   fs.mkdirSync(uploadsPath, { recursive: true });
 }
