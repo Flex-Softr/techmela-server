@@ -11,7 +11,11 @@ import config from "../../config/config";
 import { r2Client } from "../../config/r2.config";
 import { ImageServices } from "./image.service";
 
-import { extractMediaKey, mergeMediaBaseUrl } from "../../utilities/mediaPath";
+import {
+  extractMediaKey,
+  getUploadDirectories,
+  mergeMediaBaseUrl,
+} from "../../utilities/mediaPath";
 
 const generatePresignedUrl = catchAsync(async (req, res) => {
   const { filename, contentType, purpose, refId } = req.body;
@@ -137,11 +141,8 @@ const createImage = catchAsync(async (req, res) => {
         });
         await r2Client.send(command);
       } else {
-        const localFolder = config.local_upload_folder || "uploads/public";
-        const localBaseDir = path.isAbsolute(localFolder)
-          ? localFolder
-          : path.join(__dirname, "../../..", localFolder);
-        const localDir = path.join(localBaseDir, folder);
+        const { publicUploadDir } = getUploadDirectories();
+        const localDir = path.join(publicUploadDir, folder);
         await fs.promises.mkdir(localDir, { recursive: true });
         const localFilePath = path.join(localDir, fileName);
         await fs.promises.writeFile(localFilePath, webpBuffer);

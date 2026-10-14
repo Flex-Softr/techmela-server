@@ -1,4 +1,72 @@
+import fs from "fs";
+import path from "path";
 import config from "../config/config";
+
+/**
+ * Finds the project root directory of techmela-server reliably,
+ * regardless of whether the process was started from the monorepo root,
+ * the techmela-server folder, in development (ts-node), or in Docker/production (dist).
+ */
+export const getServerRootDir = (): string => {
+  if (process.env.APP_ROOT && fs.existsSync(process.env.APP_ROOT)) {
+    return process.env.APP_ROOT;
+  }
+
+  let currentDir = __dirname;
+  while (currentDir !== path.dirname(currentDir)) {
+    const pkgPath = path.join(currentDir, "package.json");
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+        if (
+          pkg.name === "ec-cosmetics-backend" ||
+          fs.existsSync(path.join(currentDir, "dist/server.js")) ||
+          fs.existsSync(path.join(currentDir, "src/server.ts"))
+        ) {
+          return currentDir;
+        }
+      } catch {
+        // continue search
+      }
+    }
+    currentDir = path.dirname(currentDir);
+  }
+
+  const subServerDir = path.join(process.cwd(), "techmela-server");
+  if (fs.existsSync(path.join(subServerDir, "package.json"))) {
+    return subServerDir;
+  }
+
+  return process.cwd();
+};
+
+/**
+ * Returns the resolved directory paths for static and uploaded assets.
+ */
+export const getUploadDirectories = () => {
+  const rootDir = getServerRootDir();
+  const configuredFolder = (
+    config.local_upload_folder || "uploads/public"
+  ).trim();
+
+  const publicUploadDir = path.isAbsolute(configuredFolder)
+    ? configuredFolder
+    : path.join(rootDir, configuredFolder);
+
+  const uploadsRootDir = path.isAbsolute(configuredFolder)
+    ? path.dirname(configuredFolder)
+    : path.join(rootDir, "uploads");
+
+  return {
+    rootDir,
+    publicUploadDir,
+    uploadsRootDir,
+    previewsDir: path.join(uploadsRootDir, "previews"),
+    employDir: path.join(uploadsRootDir, "employ"),
+    imageToOrderDir: path.join(uploadsRootDir, "image_to_order"),
+    warrantyClaimDir: path.join(uploadsRootDir, "warranty_claim"),
+  };
+};
 
 /**
  * Returns the configured base URL for media files without trailing slashes.

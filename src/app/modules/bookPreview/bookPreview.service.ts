@@ -8,7 +8,10 @@ import { r2Client } from "../../config/r2.config";
 import { TBookPreview } from "./bookPreview.interface";
 import { BookPreviewModel } from "./bookPreview.model";
 
-import { extractMediaKey } from "../../utilities/mediaPath";
+import {
+  extractMediaKey,
+  getUploadDirectories,
+} from "../../utilities/mediaPath";
 
 const createBookPreviewIntoDB = async (payload: Partial<TBookPreview[]>) => {
   const normalizedPayload = Array.isArray(payload)
@@ -73,11 +76,8 @@ const deleteBookPreviewsFromDB = async (
           }
         } else {
           try {
-            const localFilePath = path.join(
-              process.cwd(),
-              "uploads/previews",
-              key
-            );
+            const { previewsDir } = getUploadDirectories();
+            const localFilePath = path.join(previewsDir, key);
             if (fs.existsSync(localFilePath)) {
               await fs.promises.unlink(localFilePath);
             }

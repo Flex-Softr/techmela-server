@@ -8,7 +8,10 @@ import { r2Client } from "../../config/r2.config";
 import { TImage } from "./image.interface";
 import { ImageModel } from "./image.model";
 
-import { extractMediaKey } from "../../utilities/mediaPath";
+import {
+  extractMediaKey,
+  getUploadDirectories,
+} from "../../utilities/mediaPath";
 
 const createImageIntoDB = async (payload: Partial<TImage[]>) => {
   const normalizedPayload = Array.isArray(payload)
@@ -72,13 +75,15 @@ const deleteImagesFromDB = async (
           }
         } else {
           try {
-            const localFolder = config.local_upload_folder || "uploads/public";
-            const localBaseDir = path.isAbsolute(localFolder)
-              ? localFolder
-              : path.join(__dirname, "../../..", localFolder);
-            const localFilePath = path.join(localBaseDir, key);
+            const { publicUploadDir, uploadsRootDir } = getUploadDirectories();
+            const localFilePath = path.join(publicUploadDir, key);
             if (fs.existsSync(localFilePath)) {
               await fs.promises.unlink(localFilePath);
+            } else {
+              const fallbackPath = path.join(uploadsRootDir, key);
+              if (fs.existsSync(fallbackPath)) {
+                await fs.promises.unlink(fallbackPath);
+              }
             }
           } catch (error) {
             // eslint-disable-next-line no-console

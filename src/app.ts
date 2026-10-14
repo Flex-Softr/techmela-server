@@ -16,6 +16,7 @@ import { notFoundRoute } from "./app/middlewares/notFoundRoute";
 import limitRequest from "./app/middlewares/requestLimitHandler";
 import router from "./app/routes";
 import { requestLogger } from "./app/utilities/logger";
+import { getUploadDirectories } from "./app/utilities/mediaPath";
 
 const app: Application = express();
 
@@ -47,10 +48,11 @@ app.use(
             directives: {
               ...helmet.contentSecurityPolicy.getDefaultDirectives(),
               "frame-ancestors": ["'self'", ...allowedOrigins],
+              "upgrade-insecure-requests": null,
             },
           }
         : false,
-    hsts: config.env === "production",
+    hsts: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
@@ -67,7 +69,7 @@ app.use(requestIp.mw());
 
 // Custom request logger
 app.use((req, res, next) => {
-  if (req.originalUrl.startsWith(`/${PATH_PREFIX}/uploads`)) {
+  if (req.originalUrl.includes("/uploads/")) {
     return next();
   }
   const start = Date.now();
@@ -89,54 +91,105 @@ app.get(`/${PATH_PREFIX}`, (req, res) => {
 });
 
 // static files
-const uploadsPath = path.isAbsolute(config.local_upload_folder || "")
-  ? config.local_upload_folder
-  : path.join(__dirname, "..", config.local_upload_folder || "uploads/public");
-if (!fs.existsSync(uploadsPath)) {
-  fs.mkdirSync(uploadsPath, { recursive: true });
+const {
+  publicUploadDir,
+  uploadsRootDir,
+  previewsDir,
+  employDir,
+  imageToOrderDir,
+  warrantyClaimDir,
+} = getUploadDirectories();
+
+if (!fs.existsSync(publicUploadDir)) {
+  fs.mkdirSync(publicUploadDir, { recursive: true });
 }
+if (!fs.existsSync(previewsDir)) {
+  fs.mkdirSync(previewsDir, { recursive: true });
+}
+if (!fs.existsSync(employDir)) {
+  fs.mkdirSync(employDir, { recursive: true });
+}
+if (!fs.existsSync(imageToOrderDir)) {
+  fs.mkdirSync(imageToOrderDir, { recursive: true });
+}
+if (!fs.existsSync(warrantyClaimDir)) {
+  fs.mkdirSync(warrantyClaimDir, { recursive: true });
+}
+
+// 1. Primary public uploads routes - serve from publicUploadDir, fallback to uploadsRootDir
 app.use(
   `/${PATH_PREFIX}/uploads/public`,
   enableCrossOriginResourcePolicy,
-  express.static(uploadsPath)
+  express.static(publicUploadDir),
+  express.static(uploadsRootDir)
 );
 app.use(
   `/uploads/public`,
   enableCrossOriginResourcePolicy,
-  express.static(uploadsPath)
+  express.static(publicUploadDir),
+  express.static(uploadsRootDir)
 );
 
-const previewsPath = path.join(__dirname, "..", "uploads/previews");
+// 2. Direct /uploads route - handles manual browser access when /public is omitted in URL
+app.use(
+  `/${PATH_PREFIX}/uploads`,
+  enableCrossOriginResourcePolicy,
+  express.static(publicUploadDir),
+  express.static(uploadsRootDir)
+);
+app.use(
+  `/uploads`,
+  enableCrossOriginResourcePolicy,
+  express.static(publicUploadDir),
+  express.static(uploadsRootDir)
+);
+
+// 3. Previews
 app.use(
   `/${PATH_PREFIX}/uploads/previews`,
   enableCrossOriginResourcePolicy,
-  express.static(previewsPath)
+  express.static(previewsDir)
+);
+app.use(
+  `/uploads/previews`,
+  enableCrossOriginResourcePolicy,
+  express.static(previewsDir)
 );
 
-const employProfilePicture = path.join(__dirname, "..", "uploads/employ");
+// 4. Employ profile picture
 app.use(
   `/${PATH_PREFIX}/uploads/employ`,
   enableCrossOriginResourcePolicy,
-  express.static(employProfilePicture)
+  express.static(employDir)
+);
+app.use(
+  `/uploads/employ`,
+  enableCrossOriginResourcePolicy,
+  express.static(employDir)
 );
 
-const imageToOrder = path.join(__dirname, "..", "uploads/image_to_order");
+// 5. Image to order
 app.use(
   `/${PATH_PREFIX}/uploads/image_to_order`,
   enableCrossOriginResourcePolicy,
-  express.static(imageToOrder)
+  express.static(imageToOrderDir)
+);
+app.use(
+  `/uploads/image_to_order`,
+  enableCrossOriginResourcePolicy,
+  express.static(imageToOrderDir)
 );
 
-// Warranty claim request videos and images
-const warrantyclaimVideosImages = path.join(
-  __dirname,
-  "..",
-  "uploads/warranty_claim"
-);
+// 6. Warranty claim request videos and images
 app.use(
   `/${PATH_PREFIX}/uploads/warranty_claim`,
   enableCrossOriginResourcePolicy,
-  express.static(warrantyclaimVideosImages)
+  express.static(warrantyClaimDir)
+);
+app.use(
+  `/uploads/warranty_claim`,
+  enableCrossOriginResourcePolicy,
+  express.static(warrantyClaimDir)
 );
 
 //Global rate limiter

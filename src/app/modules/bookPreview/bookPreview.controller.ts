@@ -10,7 +10,11 @@ import config from "../../config/config";
 import { r2Client } from "../../config/r2.config";
 import { BookPreviewServices } from "./bookPreview.service";
 
-import { extractMediaKey, mergeMediaBaseUrl } from "../../utilities/mediaPath";
+import {
+  extractMediaKey,
+  getUploadDirectories,
+  mergeMediaBaseUrl,
+} from "../../utilities/mediaPath";
 
 const generatePresignedUrl = catchAsync(async (req, res) => {
   const { filename, contentType, previewType, bookId } = req.body;
@@ -113,11 +117,8 @@ const createBookPreview = catchAsync(async (req, res) => {
         });
         await r2Client.send(command);
       } else {
-        const localDir = path.join(
-          process.cwd(),
-          "uploads/previews",
-          folder
-        );
+        const { previewsDir } = getUploadDirectories();
+        const localDir = path.join(previewsDir, folder);
         await fs.promises.mkdir(localDir, { recursive: true });
         const localFilePath = path.join(localDir, fileName);
         await fs.promises.writeFile(localFilePath, file.buffer);
